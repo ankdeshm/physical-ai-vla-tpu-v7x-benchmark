@@ -1,0 +1,71 @@
+# Physical AI VLA Quad-Architecture Triathlon Configuration Matrix (Cloud TPU v7x)
+hardware:
+  accelerator: tpu-v7x
+  slice_topology: 2x2x2
+  num_hosts: 2
+  chips_per_host: 4
+  tensorcores_per_chip: 2
+  total_tensorcores: 16
+  hbm3e_per_tensorcore_gib: 96
+  total_slice_hbm3e_gib: 1536
+
+offload_services:
+  multimodal_vision_preproc_url: "http://multimodal-cpu-offload-svc.default.svc.cluster.local:8090/preprocess_vision"
+  protocol: "HTTP/1.1 Keep-Alive + TCP_NODELAY"
+
+models:
+  - key: pi05_base
+    repo_id: lerobot/pi05_base
+    paradigm: "PaliGemma-2B Prefix + Gemma-300M Flow-Matching Action Expert"
+    default_resolution: 224
+    default_action_chunk: 50
+    ode_steps: [4, 10]
+  - key: pi05_libero
+    repo_id: lerobot/pi05_libero_finetuned_v044
+    paradigm: "PaliGemma-2B Prefix + Gemma-300M Flow-Matching Action Expert (LIBERO 7-DoF)"
+    default_resolution: 224
+    default_action_chunk: 50
+    ode_steps: [4, 10]
+  - key: gr00t_n1_7_3b
+    repo_id: nvidia/GR00T-N1.7-3B
+    paradigm: "SigLip2 + Cosmos-Reason2-2B + 32L AdaLN Flow-Matching Action DiT"
+    default_resolution: 256
+    default_action_chunk: 50
+    ode_steps: [4, 10]
+  - key: cosmos3_edge_droid
+    repo_id: nvidia/Cosmos3-Edge-Policy-DROID
+    paradigm: "SigLIP + 28L Cosmos3 Mixture-of-Transformers Flow Policy"
+    default_resolution: 256
+    default_action_chunk: 32
+    ode_steps: [4, 10]
+  - key: openvla_7b
+    repo_id: openvla/openvla-7b
+    paradigm: "Dual DinoV2+SigLIP + 32L Llama-2-7B 7-Token Autoregressive Action Decode"
+    default_resolution: 224
+    default_action_chunk: 1
+    decode_tokens: 7
+  - key: openvla_7b_oft
+    repo_id: moojink/openvla-7b-oft-finetuned-libero-spatial
+    paradigm: "Dual DinoV2+SigLIP + 32L Llama-2-7B 1-Pass Parallel Continuous Action Chunking"
+    default_resolution: 224
+    default_action_chunk: 50
+    forward_passes: 1
+
+sweeps:
+  precisions: [BF16, FP8]
+  backends: [torchtpu-compiled, torchtpu-eager]
+  topologies:
+    - "1-TC (DP=1)"
+    - "1-Chip Intra-Chip TP=2 (2 TC)"
+    - "1-Host DP=8 (8 TC)"
+    - "2-Host Slice DP=16 (16 TC)"
+  batch_sizes: [1, 2, 4, 8, 16, 32]
+  closed_loop_concurrency: [1, 4, 8, 16, 32, 64]
+  open_loop_poisson_hz: [50, 100, 500, 1000]
+  camera_views: [1, 2, 4]
+  resolutions: [224, 256, 384]
+  action_chunks: [16, 32, 50]
+  sla_tiers_ms:
+    100hz_ultra_fast_ms: 10.0
+    50hz_realtime_ms: 20.0
+    20hz_manipulation_ms: 50.0

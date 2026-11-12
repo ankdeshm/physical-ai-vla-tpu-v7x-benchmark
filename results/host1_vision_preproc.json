@@ -1,0 +1,110 @@
+{
+  "1x224": {
+    "num_cams": 1,
+    "dst_res": 224,
+    "transform": "640x480->224x224",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 3.02,
+    "disagg_cpu_rtt_ms": 4.41,
+    "disagg_cpu_preproc_ms": 3.77,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 0.68,
+    "server_compute_speedup_x": 0.8
+  },
+  "1x256": {
+    "num_cams": 1,
+    "dst_res": 256,
+    "transform": "640x480->256x256",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 3.18,
+    "disagg_cpu_rtt_ms": 4.8,
+    "disagg_cpu_preproc_ms": 4.15,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 0.66,
+    "server_compute_speedup_x": 0.77
+  },
+  "1x384": {
+    "num_cams": 1,
+    "dst_res": 384,
+    "transform": "640x480->384x384",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 4.23,
+    "disagg_cpu_rtt_ms": 7.21,
+    "disagg_cpu_preproc_ms": 6.48,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 0.59,
+    "server_compute_speedup_x": 0.65
+  },
+  "2x224": {
+    "num_cams": 2,
+    "dst_res": 224,
+    "transform": "640x480->224x224",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 4.82,
+    "disagg_cpu_rtt_ms": 5.65,
+    "disagg_cpu_preproc_ms": 4.73,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 0.85,
+    "server_compute_speedup_x": 1.02
+  },
+  "2x256": {
+    "num_cams": 2,
+    "dst_res": 256,
+    "transform": "640x480->256x256",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 5.23,
+    "disagg_cpu_rtt_ms": 6.19,
+    "disagg_cpu_preproc_ms": 5.23,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 0.84,
+    "server_compute_speedup_x": 1.0
+  },
+  "2x384": {
+    "num_cams": 2,
+    "dst_res": 384,
+    "transform": "640x480->384x384",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 7.39,
+    "disagg_cpu_rtt_ms": 9.62,
+    "disagg_cpu_preproc_ms": 8.39,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 0.77,
+    "server_compute_speedup_x": 0.88
+  },
+  "4x224": {
+    "num_cams": 4,
+    "dst_res": 224,
+    "transform": "640x480->224x224",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 9.36,
+    "disagg_cpu_rtt_ms": 7.3,
+    "disagg_cpu_preproc_ms": 6.04,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 1.28,
+    "server_compute_speedup_x": 1.55
+  },
+  "4x256": {
+    "num_cams": 4,
+    "dst_res": 256,
+    "transform": "640x480->256x256",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 10.3,
+    "disagg_cpu_rtt_ms": 8.25,
+    "disagg_cpu_preproc_ms": 6.91,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 1.25,
+    "server_compute_speedup_x": 1.49
+  },
+  "4x384": {
+    "num_cams": 4,
+    "dst_res": 384,
+    "transform": "640x480->384x384",
+    "offload_ok": true,
+    "local_cpu_preproc_ms": 14.86,
+    "disagg_cpu_rtt_ms": 14.14,
+    "disagg_cpu_preproc_ms": 11.96,
+    "encoder_tier": "disaggregated-xeon-cpu-pool",
+    "sync_speedup_x": 1.05,
+    "server_compute_speedup_x": 1.24
+  }
+}

@@ -1,0 +1,97 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: physical-ai-vla-tpu-v7x-triathlon
+  namespace: default
+  labels:
+    app: physical-ai-vla-tpu-v7x-triathlon
+    workload: robotics-vla-benchmark
+spec:
+  completions: 2
+  parallelism: 2
+  completionMode: Indexed
+  backoffLimit: 2
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+        gke-gcsfuse/volumes: "true"
+      labels:
+        app: physical-ai-vla-tpu-v7x-triathlon
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      restartPolicy: OnFailure
+      serviceAccountName: default
+      nodeSelector:
+        cloud.google.com/gke-nodepool: YOUR_TPU_V7X_NODEPOOL
+      tolerations:
+      - key: google.com/tpu
+        operator: Exists
+        effect: NoSchedule
+      - key: cloud.google.com/gke-queued
+        operator: Exists
+        effect: NoSchedule
+      - key: cloud.google.com/gke-spot
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: vla-bench
+        image: us-central1-docker.pkg.dev/YOUR_GCP_PROJECT_ID/vllm/vllm-torchtpu-omni:v0.32.0
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        env:
+        - name: PJRT_DEVICE
+          value: "TPU"
+        - name: MULTIMODAL_CPU_OFFLOAD_URL
+          value: "http://multimodal-cpu-offload-svc.default.svc.cluster.local:8090"
+        command:
+        - bash
+        - -lc
+        - |
+          set -euo pipefail
+          ulimit -c 0 || true
+          mount -o remount,size=850G /dev/shm || true
+          mkdir -p /tmp/vla_bench /tmp/vla_triathlon_results
+          BUCKET="YOUR_GCS_BUCKET"
+          TOK=$(curl -sS -H "Metadata-Flavor: Google" "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token" | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+          for f in cpu_offload_client.py gcs_stager.py tpu_single_host_setup.py run_physical_ai_vla_v7x_triathlon.py; do
+            curl -fsSL -H "Authorization: Bearer ${TOK}" \
+              "https://storage.googleapis.com/storage/v1/b/${BUCKET}/o/vla-triathlon%2Fscripts%2F${f}?alt=media" \
+              -o "/tmp/vla_bench/${f}"
+          done
+          if [ "${JOB_COMPLETION_INDEX:-0}" = "0" ]; then
+            python3 -u /tmp/vla_bench/run_physical_ai_vla_v7x_triathlon.py \
+              --models-root=/models/models \
+              --models=pi05_base,pi05_libero,gr00t_n1_7_3b \
+              --cores-per-host=8 \
+              --output-dir=/tmp/vla_triathlon_results \
+              --tag=host0
+          else
+            python3 -u /tmp/vla_bench/run_physical_ai_vla_v7x_triathlon.py \
+              --models-root=/models/models \
+              --models=cosmos3_edge_droid,openvla_7b,openvla_7b_oft \
+              --cores-per-host=8 \
+              --output-dir=/tmp/vla_triathlon_results \
+              --tag=host1
+          fi
+        resources:
+          requests:
+            google.com/tpu: "4"
+            memory: "600Gi"
+          limits:
+            google.com/tpu: "4"
+        volumeMounts:
+        - name: models-pvc
+          mountPath: /models
+        - name: dshm
+          mountPath: /dev/shm
+      volumes:
+      - name: models-pvc
+        persistentVolumeClaim:
+          claimName: tpu-models-gcsfuse-pvc
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 700Gi
